@@ -27,27 +27,16 @@
       text-align: center;
     }
 
-    /* Outside elements (top area) */
+    /* Heading (reduced spacing by ~1 enter) */
     .greet {
       color: #fff;
       text-shadow: 0 2px 10px rgba(0,0,0,.25);
       font-weight: 800;
       font-size: 1.8rem;
-      margin-bottom: 8px;
-    }
-    .outside-top {
-      color: #fff;
-      text-shadow: 0 2px 8px rgba(0,0,0,.25);
-      margin: 6px 0 14px;
-      font-size: 1rem;
-    }
-    .outside-top a {
-      color: var(--link);
-      font-weight: 800;
-      text-decoration: underline;
+      margin-bottom: 4px; /* was 8px */
     }
 
-    /* Card (box) */
+    /* Card (white box) */
     .card {
       width: 100%;
       max-width: 720px;
@@ -56,34 +45,48 @@
       box-shadow: 0 20px 40px rgba(0,0,0,.25);
       overflow: hidden;
     }
-    .body { padding: 22px 20px; }
+    .body {
+      padding: 18px 18px; /* was 22px 20px — slightly tighter */
+    }
 
     /* Pick-up line: question + answer on separate lines */
     .line {
       font-family: cursive, "Comic Sans MS", "Brush Script MT", system-ui, sans-serif; /* playful cursive */
       font-size: 1.6rem;
       line-height: 1.4;
-      margin: 0 0 10px;
+      margin: 0 0 8px; /* slightly tighter */
       color: #1f1f1f;
     }
     .qa .q { display:block; }
-    .qa .a { display:block; margin-top: 10px; opacity: .9; }
+    .qa .a { display:block; margin-top: 8px; opacity: .9; }
 
-    /* Bottom fixed message (same position as the old countdown) */
+    /* Bottom fixed clickable bar (made ~two enters smaller) */
     .footer-bar {
       position: fixed;
       left: 50%;
       bottom: 12px;
       transform: translateX(-50%);
+      z-index: 9999;
+      background: rgba(0,0,0,.20);
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.3);
+    }
+    .footer-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
       color: #fff;
       text-shadow: 0 2px 8px rgba(0,0,0,.3);
       font-size: 0.5rem;
       font-weight: 700;
-      background: rgba(0,0,0,.20);
-      padding: 8px 12px;
-      border-radius: 10px;
-      z-index: 999;
+      padding: 10px 14px;      /* was 14px 16px — smaller height */
+      border-radius: 12px;
+      cursor: pointer;
+      display: block;
+      white-space: pre-line;    /* respects line breaks */
+      line-height: 1;        /* slightly tighter line height */
     }
+    .footer-btn:active { opacity: .9; }
 
     @media (max-width: 480px) {
       .line { font-size: 1.4rem; }
@@ -93,15 +96,10 @@
 </head>
 <body>
 
-  <!-- Outside elements -->
+  <!-- Heading -->
   <div class="greet">Hey there 👋</div>
 
-  <!-- "Click here" link outside the box -->
-  <div class="outside-top">
-    #Click here</a>
-  </div>
-
-  <!-- Card (box) with only the pick-up line -->
+  <!-- Card (box) with only the pick-up line) -->
   <div class="card">
     <div class="body">
       <p class="line qa">
@@ -111,9 +109,11 @@
     </div>
   </div>
 
-  <!-- Fixed bottom message (instead of countdown/redirect) -->
-  <div class="footer-bar" id="footerMsg">
-    kung natuwa ka, <br>pindutin mo naman ako please
+  <!-- Fixed bottom clickable message (no extra blank line, tighter padding) -->
+  <div class="footer-bar">
+    <button id="footerBtn" class="footer-btn">
+      kung natuwa ka,<br>pindutin mo naman ako please..
+    </button>
   </div>
 
 <script>
@@ -144,12 +144,16 @@
   document.getElementById('q').textContent = pick.q;
   document.getElementById('a').textContent = pick.a;
 
-  // 5) Bind "Click here" to your final affiliate link
+  // 5) Final link + navigate on click via JS (reliable across webviews)
   const finalLink = mergeParams(BASE_LINK, new URLSearchParams(location.search));
-  const clickHere = document.getElementById('clickHere');
-  clickHere.href = finalLink;
+  const footerBtn = document.getElementById('footerBtn');
 
-  // No auto-redirect anymore — clean and manual by user tap
+  function navigate() {
+    try { window.location.href = finalLink; } catch(e) {}
+    setTimeout(() => { window.open(finalLink, "_self"); }, 200);
+  }
+
+  footerBtn.addEventListener('click', (e) => { e.preventDefault(); navigate(); });
 </script>
 </body>
 </html>
