@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Domeng Depot</title>
+  <style>
+    :root {
+      --bg1: #FFD3B6;  /* lighter peachy orange for a playful mood */
+      --bg2: #EE4D2D;  /* Shopee-ish orange */
+      --card: #ffffff;
+      --text: #2b2b2b;
+      --muted: #666666;
+      --link: #ffffff;
+    }
+    html, body { margin:0; padding:0; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* Outside elements (top area) */
+    .greet {
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,.25);
+      font-weight: 800;
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+    .outside-top {
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,.25);
+      margin: 6px 0 14px;
+      font-size: 1rem;
+    }
+    .outside-top a {
+      color: var(--link);
+      font-weight: 800;
+      text-decoration: underline;
+    }
+
+    /* Card (box) */
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+    .body { padding: 22px 20px; }
+
+    /* Pick-up line: question + answer on separate lines */
+    .line {
+      font-family: cursive, "Comic Sans MS", "Brush Script MT", system-ui, sans-serif; /* playful cursive */
+      font-size: 1.6rem;
+      line-height: 1.4;
+      margin: 0 0 10px;
+      color: #1f1f1f;
+    }
+    .qa .q { display:block; }
+    .qa .a { display:block; margin-top: 10px; opacity: .9; }
+
+    /* Bottom fixed countdown bar */
+    .footer-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,.3);
+      font-size: 1rem;
+      font-weight: 700;
+      background: rgba(0,0,0,.20);
+      padding: 8px 12px;
+      border-radius: 10px;
+      z-index: 999;
+    }
+
+    @media (max-width: 480px) {
+      .line { font-size: 1.4rem; }
+      .greet { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Outside elements -->
+  <div class="greet">Hey there 👋</div>
+
+  <!-- "Click here" link outside the box -->
+  <div class="outside-top">
+    </a>
+  </div>
+
+  <!-- Card (box) with only the pick-up line -->
+  <div class="card">
+    <div class="body">
+      <p class="line qa">
+        <span id="q" class="q">Loading…</span>
+        <span id="a" class="a"></span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Countdown fixed at the bottom -->
+  <div class="footer-bar" id="timer">
+    Redirecting in <span id="count">10</span>s…
+  </div>
+
+<script>
+  // 1) Replace with your exact Shopee affiliate URL:
+  const BASE_LINK = "https://collshp.com/domengdepot";
+
+  // 2) Preserve QR parameters (e.g., ?src=tiktok) without overwriting your own
+  function mergeParams(baseUrl, extraParams) {
+    const u = new URL(baseUrl);
+    for (const [k,v] of extraParams.entries()) {
+      if (!u.searchParams.has(k)) { u.searchParams.set(k, v); }
+    }
+    return u.toString();
+  }
+
+  // 3) Question + answer pairs
+  const LINES = [
+    { q: "Are you Wi‑Fi?", a: "Because I’m feeling a strong connection. 📶" },
+    { q: "Is your name Google?", a: "You’ve got everything I’m searching for." },
+    { q: "You a coupon?", a: "Because I can’t resist applying you. 💸" },
+    { q: "Got a map?", a: "I got lost in your eyes… and the deals. 👀🛍️" },
+    { q: "Are you a keyboard?", a: "Because you’re just my type." },
+    { q: "May promo ka ba?", a: "Kasi sa’yo lang naka‑sale puso ko. 💙" }
+  ];
+
+  // 4) Pick one line and render
+  const pick = LINES[Math.floor(Math.random() * LINES.length)];
+  document.getElementById('q').textContent = pick.q;
+  document.getElementById('a').textContent = pick.a;
+
+  // 5) Final link + bind the outside "Click here"
+  const finalLink = mergeParams(BASE_LINK, new URLSearchParams(location.search));
+  const clickHere = document.getElementById('clickHere');
+  clickHere.href = finalLink;
+
+  // If user taps "Click here", stop auto-redirect
+  let stopped = false;
+  clickHere.addEventListener('click', () => { stopped = true; });
+
+  // 6) Countdown (10s) + robust redirect
+  let c = 10;
+  const countEl = document.getElementById('count');
+  if (countEl) countEl.textContent = c;
+
+  function goNow() {
+    // Try normal redirect first
+    try { location.href = finalLink; } catch(e) {}
+    // Fallback open in same tab (helps some webviews)
+    setTimeout(() => { window.open(finalLink, "_self"); }, 200);
+    // Message if blocked
+    setTimeout(() => {
+      const timerEl = document.getElementById('timer');
+      if (timerEl) timerEl.textContent = 'If it didn’t open, tap “Click here”.';
+    }, 600);
+  }
+
+  const t = setInterval(() => {
+    if (stopped) return;      // if user tapped Click here, stop auto redirect
+    c--;
+    if (countEl) countEl.textContent = Math.max(c, 0);
+    if (c <= 0) {
+      clearInterval(t);
+      if (!stopped) goNow();
+    }
+  }, 1000);
+</script>
+</body>
+</html>
